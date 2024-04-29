@@ -59,6 +59,29 @@ func (c *Client) Ping() (string, error) {
 	return string(data.Data.(lexitypes.LexiString)), nil
 }
 
+func (c *Client) Auth(username, password string) (string, error) {
+	buf := protocol.NewBuilder().
+		AddArray(3).
+		AddSimpleString("AUTH").
+		AddBulkString(username).
+		AddBulkString(password)
+	_, err := c.conn.Write(buf)
+	if err != nil {
+		return "", err
+	}
+	data, err := c.read()
+	if err != nil {
+		return "", err
+	}
+	if data.DataType == lexitypes.Error {
+		return "", errors.New(string(data.Data.(lexitypes.LexiString)))
+	}
+	if data.DataType != lexitypes.String {
+		return "", errors.New("unexpected data type from server")
+	}
+	return string(data.Data.(lexitypes.LexiString)), nil
+}
+
 func (c *Client) Set(key, value string) (string, error) {
 	buf := protocol.NewBuilder().
 		AddArray(3).
