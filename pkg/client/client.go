@@ -49,7 +49,7 @@ func (c *Client) Set(key, value string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	data, err := c.Read()
+	data, err := c.read()
 	if err != nil {
 		return "", err
 	}
@@ -62,7 +62,29 @@ func (c *Client) Set(key, value string) (string, error) {
 	return string(data.Data.(lexitypes.LexiString)), nil
 }
 
-func (c *Client) Write(buf []byte) error {
+func (c *Client) Get(key string) (string, error) {
+	buf := protocol.NewBuilder().
+		AddArray(2).
+		AddSimpleString("GET").
+		AddBulkString(key)
+	_, err := c.conn.Write(buf)
+	if err != nil {
+		return "", err
+	}
+	data, err := c.read()
+	if err != nil {
+		return "", err
+	}
+	if data.DataType == lexitypes.Error {
+		return "", errors.New(string(data.Data.(lexitypes.LexiString)))
+	}
+	if data.DataType != lexitypes.String {
+		return "", errors.New("unexpected data type from server")
+	}
+	return string(data.Data.(lexitypes.LexiString)), nil
+}
+
+func (c *Client) write(buf []byte) error {
 	length := len(buf)
 	for length < 0 {
 		n, err := c.conn.Write(buf)
@@ -75,7 +97,7 @@ func (c *Client) Write(buf []byte) error {
 	return nil
 }
 
-func (c *Client) Read() (*lexitypes.LexiType, error) {
+func (c *Client) read() (*lexitypes.LexiType, error) {
 	reader := protocol.NewReader(bufio.NewReader(c.conn))
 	return reader.ReadReply()
 }

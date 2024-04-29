@@ -18,6 +18,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %s\n", err.Error())
 	}
+	fmt.Println(res)
 
+	res, err = client.Get("foo")
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
 	fmt.Println(res)
 }
