@@ -4,7 +4,7 @@ type LexiDataType int
 
 const (
 	Null LexiDataType = iota
-    String
+	String
 	Int
 	Double
 	Error
