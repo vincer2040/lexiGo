@@ -39,6 +39,26 @@ func (c *Client) Connect() error {
 	return nil
 }
 
+func (c *Client) Ping() (string, error) {
+	buf := protocol.NewBuilder().
+		AddSimpleString("PING")
+	_, err := c.conn.Write(buf)
+	if err != nil {
+		return "", err
+	}
+	data, err := c.read()
+	if err != nil {
+		return "", err
+	}
+	if data.DataType == lexitypes.Error {
+		return "", errors.New(string(data.Data.(lexitypes.LexiString)))
+	}
+	if data.DataType != lexitypes.String {
+		return "", errors.New("unexpected data type from server")
+	}
+	return string(data.Data.(lexitypes.LexiString)), nil
+}
+
 func (c *Client) Set(key, value string) (string, error) {
 	buf := protocol.NewBuilder().
 		AddArray(3).
@@ -78,10 +98,35 @@ func (c *Client) Get(key string) (string, error) {
 	if data.DataType == lexitypes.Error {
 		return "", errors.New(string(data.Data.(lexitypes.LexiString)))
 	}
+	if data.DataType == lexitypes.Null {
+		return "", nil
+	}
 	if data.DataType != lexitypes.String {
 		return "", errors.New("unexpected data type from server")
 	}
 	return string(data.Data.(lexitypes.LexiString)), nil
+}
+
+func (c *Client) Del(key string) (int64, error) {
+	buf := protocol.NewBuilder().
+		AddArray(2).
+		AddSimpleString("DEL").
+		AddBulkString(key)
+	_, err := c.conn.Write(buf)
+	if err != nil {
+		return 0, err
+	}
+	data, err := c.read()
+	if err != nil {
+		return 0, err
+	}
+	if data.DataType == lexitypes.Error {
+		return 0, errors.New(string(data.Data.(lexitypes.LexiString)))
+	}
+	if data.DataType != lexitypes.Int {
+		return 0, errors.New("unexpected data type from server")
+	}
+	return int64(data.Data.(lexitypes.LexiInt)), nil
 }
 
 func (c *Client) write(buf []byte) error {

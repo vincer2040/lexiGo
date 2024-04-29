@@ -14,7 +14,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("error: %s\n", err.Error())
 	}
-	res, err := client.Set("foo", "bar")
+
+    res, err := client.Ping()
+    if err != nil {
+        log.Fatalf("error: %s\n", err.Error())
+    }
+    fmt.Println(res)
+
+	res, err = client.Set("foo", "bar")
 	if err != nil {
 		log.Fatalf("error: %s\n", err.Error())
 	}
@@ -25,4 +32,10 @@ func main() {
 		log.Fatalf("error: %s\n", err.Error())
 	}
 	fmt.Println(res)
+
+    resi, err := client.Del("foo")
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Println(resi)
 }
