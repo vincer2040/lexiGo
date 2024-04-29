@@ -140,8 +140,10 @@ func (r *Reader) readNull(line []byte) *lexitypes.LexiType {
 
 func (r *Reader) readLen(line []byte) int {
 	res := 0
-	for _, ch := range line[1:] {
-		res = (res * 10) + int(ch-'0')
+	i := 1
+	for line[i] != '\r' {
+		res = (res * 10) + int(line[i]-'0')
+		i++
 	}
 	return res
 }
