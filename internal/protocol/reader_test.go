@@ -160,5 +160,46 @@ func TestBulkErrors(t *testing.T) {
 			t.Fatalf("expected: %s, got %s\n", test.exp, s)
 		}
 	}
+}
 
+func TestArrays(t *testing.T) {
+	tests := []struct {
+		input string
+		exp   []string
+	}{
+		{
+			input: "*3\r\n+foo\r\n+bar\r\n+baz\r\n",
+			exp: []string{
+				"foo",
+				"bar",
+				"baz",
+			},
+		},
+	}
+
+	for _, test := range tests {
+		rd := bufio.NewReader(bytes.NewReader([]byte(test.input)))
+		reader := NewReader(rd)
+		res, err := reader.ReadReply()
+		if err != nil {
+			t.Fatalf("expected: %s, got error %+v\n", test.exp, err)
+		}
+		if res.DataType != lexitypes.Array {
+			t.Fatalf("expected: Array, got error %+v\n", err)
+		}
+		arr := res.Data.(lexitypes.LexiArray)
+		if len(arr) != len(test.exp) {
+			t.Fatalf("expected length: %d, got: %d\n", len(test.exp), len(arr))
+		}
+		for i, exp := range test.exp {
+			got := arr[i]
+			if got.DataType != lexitypes.String {
+				t.Fatalf("expected String, got %+v\n", got.DataType)
+			}
+			s := string(got.Data.(lexitypes.LexiString))
+			if exp != s {
+				t.Fatalf("expected: %s, got: %s\n", exp, s)
+			}
+		}
+	}
 }

@@ -24,6 +24,8 @@ func (r *Reader) ReadReply() (*lexitypes.LexiType, error) {
 		return nil, err
 	}
 	switch line[0] {
+	case ARRAY_BYTE:
+		return r.readArray(line)
 	case SIMPLE_STRING_BYTE:
 		return r.readSimpleString(line), nil
 	case BULK_STRING_BYTE:
@@ -38,6 +40,19 @@ func (r *Reader) ReadReply() (*lexitypes.LexiType, error) {
 		return r.readBulkError(line)
 	}
 	return nil, fmt.Errorf("unknown type byte %c", line[0])
+}
+
+func (r *Reader) readArray(line []byte) (*lexitypes.LexiType, error) {
+	length := r.readLen(line)
+	arr := make([]lexitypes.LexiType, 0)
+	for i := 0; i < length; i++ {
+		r, err := r.ReadReply()
+		if err != nil {
+			return nil, err
+		}
+		arr = append(arr, *r)
+	}
+	return &lexitypes.LexiType{DataType: lexitypes.Array, Data: lexitypes.LexiArray(arr)}, nil
 }
 
 func (r *Reader) readSimpleString(line []byte) *lexitypes.LexiType {
