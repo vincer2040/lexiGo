@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/vincer2040/lexiGo/pkg/client"
+	"github.com/vincer2040/lexiGo/pkg/lexigo"
 )
 
 func main() {
-	client := client.New("127.0.0.1:5173")
+	client := lexigo.New("127.0.0.1:5173")
 	defer client.Close()
 	err := client.Connect()
 	if err != nil {
