@@ -15,13 +15,25 @@ func main() {
 		log.Fatalf("error: %s\n", err.Error())
 	}
 
-    res, err := client.Ping()
-    if err != nil {
-        log.Fatalf("error: %s\n", err.Error())
-    }
-    fmt.Println(res)
+	res, err := client.Ping()
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Println(res)
 
 	res, err = client.Set("foo", "bar")
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Println(res)
+
+	res, err = client.Set("bar", "foo")
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Println(res)
+
+	res, err = client.Set("baz", "foo")
 	if err != nil {
 		log.Fatalf("error: %s\n", err.Error())
 	}
@@ -33,7 +45,13 @@ func main() {
 	}
 	fmt.Println(res)
 
-    resi, err := client.Del("foo")
+	keys, err := client.Keys()
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Printf("%+v\n", keys)
+
+	resi, err := client.Del("foo")
 	if err != nil {
 		log.Fatalf("error: %s\n", err.Error())
 	}

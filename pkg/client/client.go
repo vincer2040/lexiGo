@@ -152,6 +152,35 @@ func (c *Client) Del(key string) (int64, error) {
 	return int64(data.Data.(lexitypes.LexiInt)), nil
 }
 
+func (c *Client) Keys() ([]string, error) {
+	buf := protocol.NewBuilder().
+		AddSimpleString("KEYS")
+	_, err := c.conn.Write(buf)
+	if err != nil {
+		return nil, err
+	}
+	data, err := c.read()
+	if err != nil {
+		return nil, err
+	}
+	if data.DataType == lexitypes.Error {
+		return nil, errors.New(string(data.Data.(lexitypes.LexiString)))
+	}
+	if data.DataType != lexitypes.Array {
+		return nil, errors.New("unexpected data type from server")
+	}
+	arr := data.Data.(lexitypes.LexiArray)
+	res := make([]string, len(arr))
+	for i, s := range arr {
+		if s.DataType != lexitypes.String {
+			return nil, errors.New("unexpected data type from server")
+		}
+		str := string(s.Data.(lexitypes.LexiString))
+		res[i] = str
+	}
+	return res, nil
+}
+
 func (c *Client) write(buf []byte) error {
 	length := len(buf)
 	for length < 0 {
