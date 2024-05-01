@@ -51,7 +51,19 @@ func main() {
 	}
 	fmt.Printf("%+v\n", keys)
 
-	resi, err := client.Del("foo")
+	t, err := client.Type("foo")
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Printf("%s\n", t)
+
+	resi, err := client.Incr("myValue")
+	if err != nil {
+		log.Fatalf("error: %s\n", err.Error())
+	}
+	fmt.Printf("%d\n", resi)
+
+	resi, err = client.Del("foo")
 	if err != nil {
 		log.Fatalf("error: %s\n", err.Error())
 	}
